@@ -18,7 +18,7 @@ const routes = [
     component: Import
   },
   {
-    path: '/customer/:customer_id',
+    path: '/customer/:customer_id?',
     name: 'Customer',
     component: Customer
   },

@@ -7,6 +7,9 @@
     <router-link to="/import" class="mr-2 text-decoration-none">
       <v-btn text x-large>Import file</v-btn>
     </router-link>
+    <router-link to="/customer" class="mr-2 text-decoration-none">
+      <v-btn text x-large>Customer summary</v-btn>
+    </router-link>
   </v-app-bar>
   <v-app-bar
       v-else

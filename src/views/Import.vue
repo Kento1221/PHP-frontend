@@ -54,7 +54,7 @@ export default {
       let formData = new FormData();
       formData.append(this.importType, this.file);
       axios
-          .post('/import/' + this.importType + ".php", formData)
+          .post('/import/' + this.importType, formData)
           .then(function (response) {
               console.log(response.data);
           });

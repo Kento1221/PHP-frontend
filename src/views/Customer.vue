@@ -1,7 +1,7 @@
 <template>
-  <v-container class="d-flex justify-content-center pt-12">
+  <v-container class="d-flex justify-content-center pt-6">
     <v-sheet width="600px" class="pa-3 mt-3">
-      <v-card class="pt-3 bg-light">
+      <v-card v-if="!noCustomerId" class="pt-3 bg-light">
         <v-card-title class="d-block shadow-sm mx-3 bg-white">
           <v-avatar
               size="128"
@@ -45,8 +45,34 @@
             ></v-progress-circular>
           </div>
         </v-card-text>
+        <v-btn absolute right bottom rounded fab color="primary">
+          <v-icon @click="back">mdi-arrow-left</v-icon>
+        </v-btn>
       </v-card>
+      <v-card v-else class="pa-3">
+        <v-card-title class="mb-3">
+          <p class="text-h6">Choose Customer ID to see the summary</p>
+          <span class="text-body-2 pl-1">Select ID from the dropdown list and click the button below.</span>
+        </v-card-title>
+        <v-card-text>
+          <v-select class=""
+                    v-model="customer_id"
+                    :items="distinct_customer_ids"
+                    filled
+                    rounded
+                    label="Customer ID"
+          ></v-select>
+          <v-row class="mb-1 mt-12">
+            <v-spacer></v-spacer>
+            <v-btn rounded color="primary" :disabled="customer_id == null" class="font-weight-bolder" @click="chooseId">
+              Show summary
+            </v-btn>
+          </v-row>
+        </v-card-text>
+      </v-card>
+
     </v-sheet>
+
   </v-container>
 </template>
 
@@ -59,13 +85,23 @@ export default {
     return {
       customer_id: null,
       customer_data: [],
-      loadedData: false
+      distinct_customer_ids: [],
+      loadedData: false,
+      noCustomerId: false
     }
   },
   methods: {
+    getCustomerIds() {
+      if (this.distinct_customer_ids.length === 0)
+        axios
+            .get('/customers/ids/all')
+            .then((response) => {
+              this.distinct_customer_ids = response.data;
+            });
+    },
     getCustomerData() {
       axios
-          .get('/customer/index.php?id=' + this.customer_id)
+          .get('/customers/summary?id=' + this.customer_id)
           .then((response) => {
             if (response.data != null) {
               this.customer_data = response.data;
@@ -74,11 +110,28 @@ export default {
           }).catch((error) => {
         alert(error.response.data);
       });
+    },
+    chooseId() {
+      this.getCustomerData();
+      this.noCustomerId = false;
+    },
+    back() {
+      if (this.customer_id != null) {
+        this.noCustomerId = true;
+        this.customer_id = null;
+        this.customer_data = null;
+        this.getCustomerIds();
+      }
     }
   },
   mounted() {
     this.customer_id = this.$route.params.customer_id;
-    this.getCustomerData();
+    if (this.customer_id != null) {
+      this.getCustomerData();
+    } else {
+      this.noCustomerId = true;
+      this.getCustomerIds();
+    }
   }
 }
 </script>
