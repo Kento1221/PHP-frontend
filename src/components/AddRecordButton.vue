@@ -14,7 +14,7 @@
         <span class="d-flex align-center font-weight-bolder"><v-icon class="mr-1">mdi-plus</v-icon>Add new record</span>
       </v-btn>
     </template>
-    <AddRecordDialog/>
+    <AddRecordDialog v-on:close-dialog="dialog=false" v-on:refresh-records="this.$emit('refresh-records')"/>
   </v-dialog>
 </template>
 
@@ -30,11 +30,6 @@ export default {
     return {
       dialog: false,
     }
-  },
-  mounted() {
-    window.eventBus.$on('dialog_close', () => {
-      this.dialog = false;
-    });
   }
 }
 </script>

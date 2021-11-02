@@ -31,8 +31,14 @@
               inset
               vertical
           ></v-divider>
+          <div class="d-flex align-center">
+
+            <span class="mr-3">Truncate table:</span>
+            <v-btn rounded x-small color="red" class="mr-3" @click="truncate('records')">records</v-btn>
+            <v-btn rounded x-small color="red" class="mr-3" @click="truncate('geonames')">geonames</v-btn>
+          </div>
           <v-spacer></v-spacer>
-          <AddRecordButton/>
+          <AddRecordButton v-on:refresh-records="getRecords"/>
         </v-toolbar>
       </template>
       <template v-slot:item.customer_id="{ item }">
@@ -75,6 +81,8 @@ export default {
   data() {
     return {
       records: [],
+      geonames: [],
+      table: 'records',
       loadedData: false,
       headers: [
         {
@@ -95,33 +103,23 @@ export default {
   methods: {
     getRecords: async function () {
       await axios
-          .get('/records')
+          .get('http://localhost:8000/api/records')
           .then(response => {
             this.records = response.data;
             this.loadedData = true;
           });
     },
-    deleteItem(item) {
-      console.log(item.id);
-      axios
-          .delete('/records/destroy?id=' + item.id)
-          .then(() => {
-            window.eventBus.$emit('refresh_records');
-          })
-          .catch((error) => {
-            if (error.response.status !== 200)
-              console.log(error.response.status);
-          });
+    deleteItem: async function(item) {
+      await axios.delete('/records/destroy?id=' + item.id);
+      await this.getRecords();
     },
+    truncate: async function (table) {
+      await axios.delete('http://localhost:8000/api/' + table + '/truncate');
+      await this.getRecords();
+    }
   },
   mounted() {
-    this.getRecords()
-  },
-  created() {
-    window.eventBus.$on('refresh_records', () => {
-      this.loadedData = false;
-      this.getRecords();
-    })
+    this.getRecords();
   }
 }
 </script>

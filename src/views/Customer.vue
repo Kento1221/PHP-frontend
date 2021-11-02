@@ -19,7 +19,7 @@
               <span class="font-weight-bold text-h6">All calls</span>
             </div>
             <div class="mb-1"><span class="mb-3">Number of calls: </span>
-              <v-chip color="primary lighten-1">{{ customer_data['all_calls'] }}</v-chip>
+              <v-chip color="primary lighten-1">{{ customer_data['all_calls']}}</v-chip>
             </div>
             <div class="mb-1"><span class="mb-3">Sum of durations: </span>
               <v-chip color="primary lighten-1">{{ customer_data['sum_duration'] }}</v-chip>
