@@ -4,18 +4,18 @@
       <v-card>
         <v-card-title>Import .csv file</v-card-title>
         <v-card-text>
-          <v-file-input
-              v-model="file"
-              :rules="rules"
-              :error-messages="errorMessages"
-              chips
-              counter
-              show-size
-              truncate-length="50"
-              accept=".csv"
-              required
-          ></v-file-input>
-          <p v-if="disabled && file!=null" class="red--text text-left"> File must be of csv type!</p>
+          <v-form v-model="isFormValid">
+            <v-file-input
+                v-model="file"
+                :rules="rules"
+                chips
+                counter
+                show-size
+                truncate-length="50"
+                accept=".csv"
+                required
+            ></v-file-input>
+          </v-form>
           <v-radio-group
               v-model="importType"
               dense
@@ -33,23 +33,27 @@
           </v-radio-group>
           <v-row class="p-3">
             <v-spacer></v-spacer>
-            <v-btn @click="this.import"
-                   elevation="2"
-                   :disabled="disabled"
-            ><span class="font-weight-semibold">Import</span></v-btn>
-          </v-row>
-          <v-dialog
-              v-model="dialog"
-              width="500"
-          >
-            <template>
+
+            <v-dialog
+                v-model="dialog"
+                width="500"
+            >
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn
+                    @click="importFile"
+                    elevation="2"
+                    v-on="on"
+                    v-bind="attrs"
+                    :disabled="!isFormValid"
+                ><span class="font-weight-semibold">Import</span></v-btn>
+              </template>
               <v-card>
                 <v-card-title class="text-h5 grey lighten-2">
-                  Import result
+                  Result
                 </v-card-title>
 
                 <v-card-text>
-                  {{ dialogText }}
+                  <h4 class="mt-12">{{ dialogText }}</h4>
                 </v-card-text>
 
                 <v-divider></v-divider>
@@ -65,8 +69,8 @@
                   </v-btn>
                 </v-card-actions>
               </v-card>
-            </template>
-          </v-dialog>
+            </v-dialog>
+          </v-row>
         </v-card-text>
       </v-card>
     </v-sheet>
@@ -83,34 +87,35 @@ export default {
       file: null,
       dialog: false,
       dialogText: "",
-      errorMessages: null,
       importType: 'records',
-      disabled: true,
+      isFormValid: false,
       rules: [
+        value => !!value || 'Required.',
         value => !value || value.size < 2000000 || 'File size should be less than 2 MB!',
+        value => !value || value.name.substr(value.name.length - 3) === 'csv' || 'File must be of .csv extension!',
       ],
     }
   },
   methods: {
-    import() {
+    importFile() {
       let formData = new FormData();
       formData.append(this.importType, this.file);
       this.file = null;
       axios
           .post('/import/' + this.importType, formData)
-          .then(function () {
-            alert('Import file sent');
+          .then(response => {
+            this.dialogText =
+                response.status === 200
+                && response.data === ''
+                    ? "Import completed."
+                    : "Import failed";
           });
     }
   },
   watch: {
-    file: function (val) {
-      if (!val) {
-        this.disabled = true;
-        return;
-      }
-      if (val.name.substr(val.name.length - 3) === 'csv')
-        this.disabled = false;
+    dialog: function (val) {
+      if (!val)
+        this.dialogText = null;
     }
   }
 }
